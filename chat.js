@@ -300,7 +300,7 @@ async function sendMessage() {
     }
 }
 
-// AIレスポンス取得
+// AIレスポンス取得（リトライ機能付き）
 async function getAIResponse(userMessage) {
     const llmProvider = sessionStorage.getItem('llmProvider') || 'openai';
     const prompt = createPersonaPrompt(userMessage);
@@ -308,40 +308,65 @@ async function getAIResponse(userMessage) {
     console.log('Sending request with provider:', llmProvider);
     console.log('Prompt length:', prompt.length);
 
-    try {
-        const requestData = {
-            provider: llmProvider,
-            prompt: prompt,
-            personaId: String(currentPersona.id)
-        };
-        
-        console.log('Request data:', requestData);
-        
-        const response = await fetch('api.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestData)
-        });
+    const maxRetries = 3;
+    const retryDelay = 2000; // 2秒
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('API Error Response:', errorText);
-            throw new Error(`HTTP ${response.status}: ${errorText}`);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            const requestData = {
+                provider: llmProvider,
+                prompt: prompt,
+                personaId: String(currentPersona.id)
+            };
+            
+            console.log('Request data:', requestData);
+            
+            const response = await fetch('api.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API Error Response:', errorText);
+                
+                // 503エラーの場合はリトライ
+                if (response.status === 503 && attempt < maxRetries) {
+                    console.log(`503エラー発生。${attempt}回目の試行失敗。${retryDelay/1000}秒後に再試行...`);
+                    await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
+                    continue;
+                }
+                
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            return data.response || '応答の生成に失敗しました。';
+
+        } catch (error) {
+            console.error(`API呼び出しエラー (試行${attempt}/${maxRetries}):`, error);
+            
+            // 503エラーまたは接続エラーの場合はリトライ
+            if (attempt < maxRetries && (
+                error.message.includes('503') || 
+                error.message.includes('port closed') ||
+                error.message.includes('overloaded')
+            )) {
+                console.log(`エラーが発生しました。${retryDelay/1000}秒後に再試行...`);
+                await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
+                continue;
+            }
+            
+            throw error;
         }
-
-        const data = await response.json();
-        
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
-        return data.response || '応答の生成に失敗しました。';
-
-    } catch (error) {
-        console.error('API呼び出しエラー:', error);
-        throw error;
     }
 }
 
