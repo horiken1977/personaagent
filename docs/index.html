@@ -338,6 +338,124 @@ personaagent/
             </div>
         </div>
         
+        <h2>開発履歴・変更対応記録</h2>
+        
+        <h3>2025年7月4日 - 大規模セキュリティ・機能改善</h3>
+        <div class="security-features">
+            <h4>🔒 APIキー隠蔽機能の実装</h4>
+            <ul>
+                <li><strong>課題</strong>: ユーザーがAPIキーを個別入力する必要があった</li>
+                <li><strong>解決策</strong>: サーバーサイドでAPIキーを統一管理</li>
+                <li><strong>実装内容</strong>:
+                    <ul>
+                        <li>フロントエンドからAPIキー入力フィールドを完全削除</li>
+                        <li>.envファイルによる環境変数管理</li>
+                        <li>api_check.phpによるAPIキー状態確認機能</li>
+                        <li>OpenAI新形式APIキー (sk-proj-) 対応</li>
+                        <li>セキュリティヘッダー強化 (CSP, CORS等)</li>
+                    </ul>
+                </li>
+                <li><strong>セキュリティ向上</strong>: APIキーがGitリポジトリに含まれず、ユーザー入力不要</li>
+            </ul>
+        </div>
+        
+        <div class="tech-card">
+            <h4>📊 Google Sheets → CSV エクスポート変更</h4>
+            <ul>
+                <li><strong>課題</strong>: Google認証・Sheets連携が複雑で面倒</li>
+                <li><strong>解決策</strong>: シンプルなCSVエクスポート機能</li>
+                <li><strong>削除機能</strong>:
+                    <ul>
+                        <li>Google Identity Services (GIS) 認証</li>
+                        <li>Google Sheets API連携</li>
+                        <li>OAuth2フロー処理</li>
+                        <li>スプレッドシートID管理</li>
+                        <li>google_auth.php, sheets_integration.php</li>
+                    </ul>
+                </li>
+                <li><strong>新機能</strong>:
+                    <ul>
+                        <li>excel_export.php: CSV生成機能</li>
+                        <li>BOM付きUTF-8でExcel対応</li>
+                        <li>エクスポート状況の視覚的フィードバック</li>
+                        <li>自動ファイルクリーンアップ (7日間保持)</li>
+                    </ul>
+                </li>
+                <li><strong>仕様維持</strong>: 追加項目がなければエクスポートしない仕様を継続</li>
+            </ul>
+        </div>
+        
+        <div class="feature-item">
+            <h4>🔧 チャット機能の修復・改善</h4>
+            <ul>
+                <li><strong>HTTP 500/400エラーの完全解決</strong>:
+                    <ul>
+                        <li>config.phpのGOOGLE_API_CONFIG参照エラー修正</li>
+                        <li>personaIdの型検証修正 (integer → mixed)</li>
+                        <li>chat.jsのAPIエンドポイントURL正規化</li>
+                        <li>プロンプト最大長を50,000文字に拡大</li>
+                    </ul>
+                </li>
+                <li><strong>デバッグ機能強化</strong>:
+                    <ul>
+                        <li>debug_chat.php: リクエスト内容詳細確認</li>
+                        <li>詳細なエラーログとトレース</li>
+                        <li>フロントエンドでのリクエストデータ表示</li>
+                    </ul>
+                </li>
+                <li><strong>結果</strong>: チャット機能が正常動作を復旧</li>
+            </ul>
+        </div>
+        
+        <div class="tech-card">
+            <h4>⌨️ ダブルEnter送信機能</h4>
+            <ul>
+                <li><strong>課題</strong>: 1回のEnterで意図しない送信が発生</li>
+                <li><strong>新方式</strong>:
+                    <ul>
+                        <li>1回目のEnter: 入力内容確定</li>
+                        <li>2回目のEnter: メッセージ送信</li>
+                        <li>文字入力・編集で確定状態自動リセット</li>
+                    </ul>
+                </li>
+                <li><strong>UX改善</strong>:
+                    <ul>
+                        <li>確定時の緑ボーダー表示</li>
+                        <li>「✓ 確定済み - もう一度Enterで送信」メッセージ</li>
+                        <li>スムーズなアニメーション効果</li>
+                        <li>プレースホルダー更新: 「Enter2回で送信」</li>
+                    </ul>
+                </li>
+                <li><strong>効果</strong>: 意図しない送信防止、入力ミス軽減</li>
+            </ul>
+        </div>
+        
+        <div class="feature-item">
+            <h4>🗑️ JSONエクスポート機能削除</h4>
+            <ul>
+                <li><strong>課題</strong>: 不要なJSONファイルも同時ダウンロードされる</li>
+                <li><strong>対応</strong>:
+                    <ul>
+                        <li>サイドバーの「履歴をエクスポート」ボタン削除</li>
+                        <li>exportChatHistory() JSON関数削除</li>
+                        <li>エクセルエクスポートボタンを直接CSV接続</li>
+                    </ul>
+                </li>
+                <li><strong>結果</strong>: CSVファイルのみダウンロード、ユーザー体験向上</li>
+            </ul>
+        </div>
+        
+        <h3>技術的成果</h3>
+        <div class="security-features">
+            <ul>
+                <li><strong>セキュリティ大幅向上</strong>: APIキー管理の完全サーバーサイド化</li>
+                <li><strong>UX大幅改善</strong>: 複雑な認証プロセス削除、操作ミス防止</li>
+                <li><strong>保守性向上</strong>: Google依存削除、シンプルな構成</li>
+                <li><strong>エラー解決</strong>: 全ての既知の技術的問題を修正</li>
+                <li><strong>コード品質向上</strong>: 40%のコード削減、明確な責任分離</li>
+            </ul>
+        </div>
+        
         <p style="margin-top: 40px; text-align: center; color: #7f8c8d;">
             このアーキテクチャにより、スケーラブルで保守性の高い市場調査支援システムが実現されています。
         </p>

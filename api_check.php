@@ -55,7 +55,8 @@ try {
             break;
         case 'anthropic':
         case 'claude':
-            $isValidFormat = preg_match('/^sk-ant-[a-zA-Z0-9_-]{20,}/', $apiKey);
+            // Anthropic/ClaudeのAPIキー形式（sk-ant-で始まる、api03等のパターンも含む）
+            $isValidFormat = preg_match('/^sk-ant-/', $apiKey) && strlen($apiKey) > 20;
             break;
         case 'gemini':
             $isValidFormat = preg_match('/^AIza[a-zA-Z0-9_-]{20,}/', $apiKey);

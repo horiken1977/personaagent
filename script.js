@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
     loadSettings();
     loadSavedApiKeys();
+    // APIキー状態の初期チェック
+    checkApiKeyStatus();
 });
 
 // ペルソナデータの読み込み
@@ -167,6 +169,8 @@ function initializeEventListeners() {
         llmProvider.addEventListener('change', function() {
             updateApiKeyPlaceholder(this.value);
             loadSavedApiKey(this.value);
+            // APIキー状態を再チェック
+            checkApiKeyStatus();
         });
     }
 
