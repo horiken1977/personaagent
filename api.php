@@ -69,11 +69,11 @@ class LLMAPIHub {
             // 入力値の検証
             $this->validateRequest($input);
             
-            // レート制限チェック（一時的に無効化 - テスト用）
+            // レート制限チェック
             $clientIP = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-            // if (!$this->checkRateLimit($clientIP)) {
-            //     throw new Exception('リクエスト制限に達しました。1分後に再度お試しください。(Rate limit: 20 requests per minute)', 429);
-            // }
+            if (!$this->checkRateLimit($clientIP)) {
+                throw new Exception('リクエスト制限に達しました。1分後に再度お試しください。(Rate limit: 20 requests per minute)', 429);
+            }
             
             // テストモードの確認
             if (isset($input['test']) && $input['test'] === true) {
@@ -295,6 +295,19 @@ class LLMAPIHub {
         if ($httpCode >= 400) {
             $errorData = json_decode($response, true);
             $errorMessage = $errorData['error']['message'] ?? 'HTTP error: ' . $httpCode;
+
+            // 詳細なエラー情報をログに記録
+            error_log("LLM API Error (HTTP {$httpCode}): " . json_encode($errorData));
+
+            // ユーザーフレンドリーなエラーメッセージ
+            if ($httpCode === 429) {
+                if (strpos($errorMessage, 'quota') !== false) {
+                    $errorMessage = 'APIの利用枠を超過しました。OpenAIのダッシュボードで利用状況を確認してください。別のLLMプロバイダー（Claude/Gemini）をお試しください。';
+                } else {
+                    $errorMessage = 'リクエスト数の制限に達しました。しばらく待ってから再度お試しください。';
+                }
+            }
+
             throw new Exception($errorMessage, $httpCode);
         }
         
