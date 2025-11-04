@@ -72,7 +72,7 @@ class LLMAPIHub {
             // レート制限チェック
             $clientIP = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? 'unknown';
             if (!$this->checkRateLimit($clientIP)) {
-                throw new Exception('Rate limit exceeded', 429);
+                throw new Exception('リクエスト制限に達しました。1分後に再度お試しください。(Rate limit: 20 requests per minute)', 429);
             }
             
             // テストモードの確認
@@ -315,23 +315,34 @@ class LLMAPIHub {
         $rateFile = __DIR__ . '/logs/rate_' . md5($clientIP) . '.txt';
         $now = time();
         $requests = [];
-        
+
+        // 古いレート制限ファイルを削除（1時間以上経過）
         if (file_exists($rateFile)) {
-            $requests = array_filter(
-                explode("\n", file_get_contents($rateFile)),
-                function($timestamp) use ($now) {
-                    return $timestamp && ($now - intval($timestamp)) < 60;
+            $fileAge = $now - filemtime($rateFile);
+            if ($fileAge > 3600) {
+                @unlink($rateFile);
+            } else {
+                $content = file_get_contents($rateFile);
+                if ($content) {
+                    $requests = array_filter(
+                        explode("\n", $content),
+                        function($timestamp) use ($now) {
+                            $ts = intval($timestamp);
+                            return $ts > 0 && ($now - $ts) < 60;
+                        }
+                    );
                 }
-            );
+            }
         }
-        
-        if (count($requests) >= 60) {
+
+        // レート制限: 1分間に20リクエストまで
+        if (count($requests) >= 20) {
             return false;
         }
-        
+
         $requests[] = $now;
         file_put_contents($rateFile, implode("\n", $requests));
-        
+
         return true;
     }
 }
