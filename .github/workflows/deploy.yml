@@ -22,7 +22,8 @@ jobs:
         sudo apt-get install -y sshpass rsync
         
         # Deploy using rsync with exclusions
-        sshpass -e rsync -avz --delete \
+        # --checksum: ファイル内容で比較（タイムスタンプではなく）
+        sshpass -e rsync -avz --checksum --delete \
           --exclude='.git/' \
           --exclude='.github/' \
           --exclude='logs/' \
