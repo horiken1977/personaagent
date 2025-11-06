@@ -595,8 +595,7 @@ async function checkApiKeysAndHideInputs() {
                 const settingsMessage = document.createElement('div');
                 settingsMessage.className = 'settings-message';
                 settingsMessage.innerHTML = `
-                    <p>✅ APIキーが設定済みです</p>
-                    <a href="setup.php" class="btn btn-secondary btn-sm">設定を変更</a>
+                    <p>✅ APIキーが設定済みです（管理者によって設定されています）</p>
                 `;
                 settingsMessage.style.cssText = `
                     background: #d4edda;
