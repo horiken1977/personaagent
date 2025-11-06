@@ -63,8 +63,8 @@ const LLM_PROVIDERS = [
     ],
     'gemini' => [
         'name' => 'Google Gemini',
-        'endpoint' => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
-        'model' => 'gemini-1.5-flash',
+        'endpoint' => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+        'model' => 'gemini-2.5-flash',
         'max_tokens' => 1000,
         'temperature' => 0.7
     ]
