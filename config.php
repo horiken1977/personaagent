@@ -125,49 +125,92 @@ function getConfig($key, $default = null) {
 
 /**
  * 環境変数または設定ファイルからAPIキーを取得
+ *
+ * 優先順位:
+ * 1. 環境変数（.env）- 推奨
+ * 2. JSONファイル（api_keys.json）- 非推奨（後方互換性のみ）
  */
 function getApiKey($provider) {
-    // まずJSONファイルから読み込みを試みる
-    $apiKeysFile = __DIR__ . '/api_keys.json';
-    if (file_exists($apiKeysFile)) {
-        $content = file_get_contents($apiKeysFile);
-        if ($content) {
-            $keys = json_decode($content, true);
-            if ($keys && is_array($keys)) {
-                switch ($provider) {
-                    case 'openai':
-                        if (isset($keys['openai']) && !empty(trim($keys['openai']))) {
-                            return trim($keys['openai']);
-                        }
-                        break;
-                    case 'claude':
-                    case 'anthropic':
-                        if (isset($keys['anthropic']) && !empty(trim($keys['anthropic']))) {
-                            return trim($keys['anthropic']);
-                        }
-                        break;
-                    case 'gemini':
-                        if (isset($keys['google']) && !empty(trim($keys['google']))) {
-                            return trim($keys['google']);
-                        }
-                        break;
-                }
-            }
-        }
+    // 優先度1: 環境変数から取得（推奨）
+    $envKey = getApiKeyFromEnv($provider);
+    if ($envKey) {
+        return $envKey;
     }
-    
-    // JSONファイルになければ環境変数から取得
+
+    // 優先度2: JSONファイルから取得（非推奨）
+    $jsonKey = getApiKeyFromJson($provider);
+    if ($jsonKey) {
+        // 非推奨警告をログに記録
+        error_log("WARNING: api_keys.json is deprecated. Please migrate API keys to .env file. Provider: {$provider}");
+        return $jsonKey;
+    }
+
+    return null;
+}
+
+/**
+ * 環境変数からAPIキーを取得
+ */
+function getApiKeyFromEnv($provider) {
+    $envVar = null;
+
     switch ($provider) {
         case 'openai':
-            $key = getenv('OPENAI_API_KEY');
-            return $key ? trim($key) : null;
+            $envVar = 'OPENAI_API_KEY';
+            break;
         case 'claude':
         case 'anthropic':
-            $key = getenv('ANTHROPIC_API_KEY');
-            return $key ? trim($key) : null;
+            $envVar = 'ANTHROPIC_API_KEY';
+            break;
         case 'gemini':
-            $key = getenv('GOOGLE_AI_API_KEY');
-            return $key ? trim($key) : null;
+        case 'google':
+            $envVar = 'GOOGLE_AI_API_KEY';
+            break;
+        default:
+            return null;
+    }
+
+    $key = getenv($envVar);
+    return $key ? trim($key) : null;
+}
+
+/**
+ * JSONファイルからAPIキーを取得（非推奨）
+ *
+ * @deprecated 後方互換性のためのみ残されています。.envファイルに移行してください。
+ */
+function getApiKeyFromJson($provider) {
+    $apiKeysFile = __DIR__ . '/api_keys.json';
+
+    if (!file_exists($apiKeysFile)) {
+        return null;
+    }
+
+    $content = file_get_contents($apiKeysFile);
+    if (!$content) {
+        return null;
+    }
+
+    $keys = json_decode($content, true);
+    if (!$keys || !is_array($keys)) {
+        return null;
+    }
+
+    switch ($provider) {
+        case 'openai':
+            return isset($keys['openai']) && !empty(trim($keys['openai']))
+                ? trim($keys['openai'])
+                : null;
+        case 'claude':
+        case 'anthropic':
+            return isset($keys['anthropic']) && !empty(trim($keys['anthropic']))
+                ? trim($keys['anthropic'])
+                : null;
+        case 'gemini':
+        case 'google':
+            return isset($keys['google']) && !empty(trim($keys['google']))
+                ? trim($keys['google'])
+                : null;
         default:
             return null;
     }

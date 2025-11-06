@@ -1,7 +1,10 @@
 # セキュリティ関連ファイル（機密情報含む）
 .env
 .env.*
+!.env.example
 api_keys.json
+api_keys.json.bak
+setup.php
 
 # AWS認証情報・秘密鍵
 *.pem
