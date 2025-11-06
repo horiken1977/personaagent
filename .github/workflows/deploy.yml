@@ -20,10 +20,17 @@ jobs:
         # Install sshpass for password authentication
         sudo apt-get update
         sudo apt-get install -y sshpass rsync
-        
-        # Deploy using rsync with exclusions
+
+        # デプロイ前のファイル確認
+        echo "📦 デプロイ対象ファイルを確認中..."
+        ls -la *.php *.html *.js *.json *.md 2>/dev/null || true
+
+        # Deploy using rsync with exclusions and verbose logging
         # --checksum: ファイル内容で比較（タイムスタンプではなく）
-        sshpass -e rsync -avz --checksum --delete \
+        # -v: 詳細ログ
+        # --itemize-changes: 変更詳細を表示
+        echo "🚀 rsyncデプロイ開始..."
+        sshpass -e rsync -avz --checksum --delete --itemize-changes \
           --exclude='.git/' \
           --exclude='.github/' \
           --exclude='logs/' \
@@ -42,6 +49,8 @@ jobs:
           --exclude='*.bak' \
           -e "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5" \
           ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_REMOTE_PATH }}
+
+        echo "✅ rsyncコマンド終了 (exit code: $?)"
         
     - name: Deployment notification
       run: |
