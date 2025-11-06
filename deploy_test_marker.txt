@@ -1,0 +1,7 @@
+Deploy Test - SSH_REMOTE_PATH変更後のテスト
+==============================================
+タイムスタンプ: 2025-11-06 16:30 JST
+変更内容: SSH_REMOTE_PATH を www/persona/ に変更
+
+このファイルが https://mokumoku.sakura.ne.jp/persona/deploy_test_marker.txt
+でアクセスできれば、デプロイパスが正しく設定されています。
