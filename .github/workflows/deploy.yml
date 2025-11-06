@@ -27,10 +27,11 @@ jobs:
 
         # Deploy using rsync with exclusions and verbose logging
         # --checksum: ファイル内容で比較（タイムスタンプではなく）
+        # --ignore-times: タイムスタンプを無視してチェックサムで比較
         # -v: 詳細ログ
         # --itemize-changes: 変更詳細を表示
         echo "🚀 rsyncデプロイ開始..."
-        sshpass -e rsync -avz --checksum --delete --itemize-changes \
+        sshpass -e rsync -avz --checksum --ignore-times --delete --itemize-changes \
           --exclude='.git/' \
           --exclude='.github/' \
           --exclude='logs/' \
