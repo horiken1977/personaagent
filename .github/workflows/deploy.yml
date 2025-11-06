@@ -52,7 +52,15 @@ jobs:
           ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_REMOTE_PATH }}
 
         echo "✅ rsyncコマンド終了 (exit code: $?)"
-        
+
+        # デプロイ先の確認
+        echo ""
+        echo "🔍 デプロイ先ディレクトリの確認..."
+        echo "接続先: ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_REMOTE_PATH }}"
+        echo ""
+        echo "デプロイ先のファイル一覧 (最新10件):"
+        sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.SSH_REMOTE_PATH }} && pwd && ls -lt | head -15"
+
     - name: Deployment notification
       run: |
         echo "✅ デプロイが完了しました！"
