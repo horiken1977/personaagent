@@ -1,0 +1,10 @@
+DEPLOYMENT DIAGNOSTIC MARKER
+=========================
+Deployment Time: 2025-11-06 15:30 JST
+Commit: 4c8d7c2
+Purpose: Verify deployment path
+
+If you can see this file at:
+https://mokumoku.sakura.ne.jp/persona/diagnostic_marker.txt
+
+Then the deployment is working correctly.
