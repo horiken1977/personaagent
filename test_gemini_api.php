@@ -18,11 +18,13 @@ if (!$apiKey) {
 
 echo "✓ APIキー取得成功: " . substr($apiKey, 0, 10) . "...\n\n";
 
-// エンドポイント
-$endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+// config.phpからエンドポイントを取得
+$providers = getConfig('llm_providers');
+$endpoint = $providers['gemini']['endpoint'];
 $url = $endpoint . '?key=' . $apiKey;
 
-echo "エンドポイント: {$endpoint}\n\n";
+echo "エンドポイント: {$endpoint}\n";
+echo "モデル: " . $providers['gemini']['model'] . "\n\n";
 
 // テストリクエスト
 $data = [
