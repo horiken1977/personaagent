@@ -289,8 +289,9 @@ async function sendMessage() {
 
     } catch (error) {
         console.error('AI応答の取得に失敗:', error);
-        showErrorMessage('AI応答の取得に失敗しました。APIキーや設定を確認してください。');
-        addMessageToChat('assistant', 'すみません、応答の生成に失敗しました。しばらく時間をおいてから再度お試しください。');
+        const errorDetail = error.message || '不明なエラー';
+        showErrorMessage(`AI応答の取得に失敗しました: ${errorDetail}`);
+        addMessageToChat('assistant', `すみません、応答の生成に失敗しました。${errorDetail.includes('HTTP') ? 'サーバーエラーが発生しました。' : 'しばらく時間をおいてから再度お試しください。'}`);
     } finally {
         // UI復旧
         sendBtn.disabled = false;
@@ -302,9 +303,9 @@ async function sendMessage() {
 
 // AIレスポンス取得
 async function getAIResponse(userMessage) {
-    const llmProvider = sessionStorage.getItem('llmProvider') || 'openai';
+    const llmProvider = sessionStorage.getItem('llmProvider') || 'claude';
     const prompt = createPersonaPrompt(userMessage);
-    
+
     console.log('Sending request with provider:', llmProvider);
     console.log('Prompt length:', prompt.length);
 
